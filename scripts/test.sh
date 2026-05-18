@@ -2,4 +2,13 @@
 set -eu
 
 scripts/compile.sh
-java -cp out Main --self-test
+
+case "$(uname)" in
+  MINGW*|CYGWIN*|MSYS*) SEP=";" ;;
+  *) SEP=":" ;;
+esac
+
+java -cp "out${SEP}lib/junit-platform-console-standalone-1.10.2.jar" \
+  org.junit.platform.console.ConsoleLauncher \
+  execute \
+  --select-class=MainTest
