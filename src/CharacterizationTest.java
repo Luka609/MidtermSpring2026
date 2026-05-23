@@ -7,11 +7,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 
 class CharacterizationTest {
+    static GameState state = new GameState();
 
     @BeforeEach
     void resetState() {
         // fresh state before each test so they don't bleed into each other
-        Main.state = new GameState();
+        state = new GameState();
     }
 
     // -- COLOR MATCHING --
@@ -135,16 +136,16 @@ class CharacterizationTest {
     @Test
     void skip_advancesCurrentPlayer_twice() {
         // calling next() twice simulates a skip
-        Main.state.playerNames.add("P1");
-        Main.state.playerNames.add("P2");
-        Main.state.playerNames.add("P3");
-        Main.state.currentPlayer = 0;
-        Main.state.direction = 1;
+        state.playerNames.add("P1");
+        state.playerNames.add("P2");
+        state.playerNames.add("P3");
+        state.currentPlayer = 0;
+        state.direction = 1;
 
-        Main.state.next();
-        Main.state.next();
+        state.next();
+        state.next();
 
-        assertEquals(2, Main.state.currentPlayer);
+        assertEquals(2, state.currentPlayer);
     }
 
     @Test
@@ -156,25 +157,25 @@ class CharacterizationTest {
 
     @Test
     void reverse_flipsDirection() {
-        Main.state.direction = 1;
-        Main.state.direction *= -1;
-        assertEquals(-1, Main.state.direction);
+        state.direction = 1;
+        state.direction *= -1;
+        assertEquals(-1, state.direction);
     }
 
     @Test
     void reverse_in2PlayerGame_actsLikeSkip() {
         // in a 2-player game, reverse just skips the other person
-        Main.state.playerNames.add("P1");
-        Main.state.playerNames.add("P2");
-        Main.state.currentPlayer = 0;
-        Main.state.direction = 1;
+        state.playerNames.add("P1");
+        state.playerNames.add("P2");
+        state.currentPlayer = 0;
+        state.direction = 1;
 
-        Main.state.direction *= -1;
-        Main.state.next();
-        Main.state.next();
+        state.direction *= -1;
+        state.next();
+        state.next();
 
         // ends up back at player 0
-        assertEquals(0, Main.state.currentPlayer);
+        assertEquals(0, state.currentPlayer);
     }
 
     @Test
@@ -191,56 +192,56 @@ class CharacterizationTest {
 
     @Test
     void drawTwo_addsTwo_cardsToNextPlayer() {
-        Main.state.deck.add("R1");
-        Main.state.deck.add("R2");
-        Main.state.playerNames.add("P1");
-        Main.state.playerNames.add("P2");
-        Main.state.hands.add(new ArrayList<>());
-        Main.state.hands.add(new ArrayList<>());
-        Main.state.currentPlayer = 0;
-        Main.state.direction = 1;
+        state.deck.add("R1");
+        state.deck.add("R2");
+        state.playerNames.add("P1");
+        state.playerNames.add("P2");
+        state.hands.add(new ArrayList<>());
+        state.hands.add(new ArrayList<>());
+        state.currentPlayer = 0;
+        state.direction = 1;
 
         // move to next player and deal them 2 cards
-        Main.state.next();
-        Main.state.hands.get(Main.state.currentPlayer)
-                .add(Main.state.draw(new java.util.Random(0)));
-        Main.state.hands.get(Main.state.currentPlayer)
-                .add(Main.state.draw(new java.util.Random(0)));
+        state.next();
+        state.hands.get(state.currentPlayer)
+                .add(state.draw(new java.util.Random(0)));
+        state.hands.get(state.currentPlayer)
+                .add(state.draw(new java.util.Random(0)));
 
-        assertEquals(2, Main.state.hands.get(1).size());
+        assertEquals(2, state.hands.get(1).size());
     }
 
     // -- DRAWING FROM DECK --
 
     @Test
     void draw_removesTopCard_fromDeck() {
-        Main.state.deck.add("R5");
-        Main.state.deck.add("B3");
+        state.deck.add("R5");
+        state.deck.add("B3");
 
-        String drawn = Main.state.draw(new java.util.Random(0));
+        String drawn = state.draw(new java.util.Random(0));
         assertEquals("R5", drawn);
-        assertEquals(1, Main.state.deck.size());
+        assertEquals(1, state.deck.size());
     }
 
     @Test
     void draw_reshufflesDiscard_whenDeckIsEmpty() {
         // when the deck runs out, the discard pile gets reshuffled back in
-        Main.state.deck.clear();
-        Main.state.discard.add("G7");
-        Main.state.discard.add("Y3");
+        state.deck.clear();
+        state.discard.add("G7");
+        state.discard.add("Y3");
 
-        String drawn = Main.state.draw(new java.util.Random(0));
+        String drawn = state.draw(new java.util.Random(0));
         assertNotNull(drawn);
-        assertEquals(0, Main.state.discard.size());
-        assertEquals(1, Main.state.deck.size());
+        assertEquals(0, state.discard.size());
+        assertEquals(1, state.deck.size());
     }
 
     @Test
     void draw_returnsWild_whenBothDeckAndDiscardEmpty() {
         // see the quirk test below for context on this one
-        Main.state.deck.clear();
-        Main.state.discard.clear();
-        assertEquals("W", Main.state.draw(new java.util.Random(0)));
+        state.deck.clear();
+        state.discard.clear();
+        assertEquals("W", state.draw(new java.util.Random(0)));
     }
 
     // -- SCORING --
@@ -340,9 +341,9 @@ class CharacterizationTest {
     void draw_wildFallback_isAKnownQuirk() {
         // if both the deck and discard are empty, draw() just hands back a wild
         // instead of crashing — bit of a quirk but we're keeping it
-        Main.state.deck.clear();
-        Main.state.discard.clear();
-        assertEquals("W", Main.state.draw(new java.util.Random(0)));
+        state.deck.clear();
+        state.discard.clear();
+        assertEquals("W", state.draw(new java.util.Random(0)));
     }
 
     @Test
@@ -356,29 +357,29 @@ class CharacterizationTest {
     @Test
     void next_wrapsForward_atEndOfPlayerList() {
         // make sure it wraps around instead of going out of bounds
-        Main.state.playerNames.add("P1");
-        Main.state.playerNames.add("P2");
-        Main.state.playerNames.add("P3");
-        Main.state.currentPlayer = 2;
-        Main.state.direction = 1;
+        state.playerNames.add("P1");
+        state.playerNames.add("P2");
+        state.playerNames.add("P3");
+        state.currentPlayer = 2;
+        state.direction = 1;
 
-        Main.state.next();
+        state.next();
 
-        assertEquals(0, Main.state.currentPlayer);
+        assertEquals(0, state.currentPlayer);
     }
 
     @Test
     void next_wrapsBackward_withNegativeDirection() {
         // same but going the other way
-        Main.state.playerNames.add("P1");
-        Main.state.playerNames.add("P2");
-        Main.state.playerNames.add("P3");
-        Main.state.currentPlayer = 0;
-        Main.state.direction = -1;
+        state.playerNames.add("P1");
+        state.playerNames.add("P2");
+        state.playerNames.add("P3");
+        state.currentPlayer = 0;
+        state.direction = -1;
 
-        Main.state.next();
+        state.next();
 
-        assertEquals(2, Main.state.currentPlayer);
+        assertEquals(2, state.currentPlayer);
     }
 
     @Test

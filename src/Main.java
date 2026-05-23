@@ -3,8 +3,6 @@ import java.util.Scanner;
 
 public class Main {
 
-    static GameState state = new GameState();
-
     public static void main(String[] args) {
         GameConfig config = GameConfig.parse(args);
 
