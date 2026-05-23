@@ -2,16 +2,16 @@ import java.util.ArrayList;
 
 public class GameState {
 
-    public ArrayList<String> playerNames = new ArrayList<>();
-    public ArrayList<Boolean> humanPlayers = new ArrayList<>();
-    public ArrayList<ArrayList<String>> hands = new ArrayList<>();
-    public ArrayList<String> deck = new ArrayList<>();
-    public ArrayList<String> discard = new ArrayList<>();
-    public int[] scores = new int[10];
-    public int currentPlayer = 0;
-    public int direction = 1;
-    public String upCard = "";
-    public String calledColor = "";
+    ArrayList<String> playerNames = new ArrayList<>();
+    ArrayList<Boolean> humanPlayers = new ArrayList<>();
+    ArrayList<ArrayList<String>> hands = new ArrayList<>();
+    ArrayList<String> deck = new ArrayList<>();
+    ArrayList<String> discard = new ArrayList<>();
+    int[] scores = new int[10];
+    int currentPlayer = 0;
+    int direction = 1;
+    String upCard = "";
+    String calledColor = "";
 
     //Advances currentPlayer by direction, wrapping around.
     public void next() {
