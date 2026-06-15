@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
+import java.util.logging.Logger;
 
 /**
  * Orchestrates a full UNO game session.
@@ -13,6 +14,8 @@ import java.util.Random;
  * All output goes through ConsoleView.
  */
 public class GameRunner {
+
+    private static final Logger LOG = Logger.getLogger(GameRunner.class.getName());
 
     private final GameState state;
     private final ConsoleView view;
@@ -44,6 +47,10 @@ public class GameRunner {
         state.direction = 1;
         state.currentPlayer = random.nextInt(state.playerNames.size());
 
+        LOG.info("Game started with " + state.playerNames.size() + " players "
+                + state.playerNames + "; first up card " + state.upCard
+                + ", " + state.playerNames.get(state.currentPlayer) + " to start");
+
         runTurnLoop();
     }
 
@@ -66,6 +73,8 @@ public class GameRunner {
             ArrayList<String> hand = state.hands.get(state.currentPlayer);
 
             view.showTurnInfo(state.upCard, state.calledColor, name, hand);
+            LOG.info(name + "'s turn (" + hand.size() + " cards, up card " + state.upCard
+                    + (state.calledColor.isEmpty() ? "" : " called " + state.calledColor) + ")");
 
             int chosen = pickCard(hand);
             chosen = handleDrawPhase(chosen, hand, name);
@@ -78,6 +87,7 @@ public class GameRunner {
             }
         }
         view.showSafetyLimit();
+        LOG.warning("Game stopped at safety limit");
     }
 
     private int pickCard(ArrayList<String> hand) {
@@ -93,6 +103,7 @@ public class GameRunner {
         Card drawn = new Card(state.draw(random));
         hand.add(drawn.getCode());
         view.showDraw(name, drawn.getCode());
+        LOG.info(name + " drew " + drawn.getCode());
 
         if (Rules.isLegal(drawn, new Card(state.upCard), state.calledColor)) {
             if (!state.humanPlayers.get(state.currentPlayer)) {
@@ -108,6 +119,7 @@ public class GameRunner {
     private boolean handlePlayPhase(int chosen, ArrayList<String> hand, String name) {
         if (chosen >= hand.size()) {
             view.showPenalty(name, "selected an invalid index and draws a penalty card.");
+            LOG.warning(name + " gave invalid input (index " + chosen + "); penalty draw");
             hand.add(state.draw(random));
             state.next();
             return false;
@@ -117,6 +129,7 @@ public class GameRunner {
 
         if (!Rules.isLegal(card, new Card(state.upCard), state.calledColor)) {
             view.showPenalty(name, "tried illegal card " + card.getCode() + " and draws a penalty card.");
+            LOG.warning(name + " gave invalid input (illegal card " + card.getCode() + "); penalty draw");
             hand.add(state.draw(random));
             state.next();
             return false;
@@ -127,12 +140,14 @@ public class GameRunner {
         state.upCard = card.getCode();
         state.calledColor = "";
         view.showPlay(name, card.getCode());
+        LOG.info(name + " played " + card.getCode());
 
         if (card.isWild()) {
             state.calledColor = state.humanPlayers.get(state.currentPlayer)
                     ? view.askColor()
                     : BotStrategy.chooseColor(hand);
             view.showCalledColor(name, state.calledColor);
+            LOG.info(name + " called color " + state.calledColor);
         }
 
         if (hand.size() == 1) {
@@ -157,6 +172,7 @@ public class GameRunner {
         }
         state.scores[state.currentPlayer] += points;
         view.showWin(name, points);
+        LOG.info("Round over: " + name + " won and scored " + points + " points");
     }
 
     private void applyCardEffect(Card card) {
@@ -179,6 +195,7 @@ public class GameRunner {
                 state.hands.get(state.currentPlayer).add(state.draw(random));
                 state.hands.get(state.currentPlayer).add(state.draw(random));
                 view.showDrawTwo(state.playerNames.get(state.currentPlayer));
+                LOG.info(state.playerNames.get(state.currentPlayer) + " drew 2 cards (Draw Two)");
                 state.next();
             }
             case "WILD_DRAW_FOUR" -> {
@@ -187,6 +204,7 @@ public class GameRunner {
                     state.hands.get(state.currentPlayer).add(state.draw(random));
                 }
                 view.showDrawFour(state.playerNames.get(state.currentPlayer));
+                LOG.info(state.playerNames.get(state.currentPlayer) + " drew 4 cards (Wild Draw Four)");
                 state.next();
             }
             default -> state.next();

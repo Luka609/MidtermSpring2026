@@ -1,0 +1,14 @@
+# Build stage: compile, test, and package with Maven
+FROM maven:3.9-eclipse-temurin-17 AS build
+WORKDIR /app
+COPY pom.xml .
+RUN mvn -B -q dependency:go-offline
+COPY src ./src
+RUN mvn -B -q clean package
+
+# Run stage: small JRE image with just the packaged jar
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+COPY --from=build /app/target/uno-cli.jar ./uno-cli.jar
+ENTRYPOINT ["java", "-jar", "uno-cli.jar"]
+CMD ["--bots", "3", "--games", "1"]

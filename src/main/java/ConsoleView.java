@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.logging.Logger;
 
 /**
  * Handles all console input and output
@@ -10,6 +11,8 @@ import java.util.Scanner;
  * - Card input by index or code both supported
  */
 public class ConsoleView {
+
+    private static final Logger LOG = Logger.getLogger(ConsoleView.class.getName());
 
     private final Scanner scanner;
     private final boolean quiet;
@@ -104,9 +107,11 @@ public class ConsoleView {
                         return i;
                     }
                     System.out.println("That card is not legal.");
+                    LOG.warning("Invalid input: " + input + " is not legal");
                 }
             }
             System.out.println("Card not found.");
+            LOG.warning("Invalid input: " + input + " not recognized");
         }
     }
 

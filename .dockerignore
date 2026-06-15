@@ -1,5 +1,8 @@
-out/
 target/
+out/
 logs/
+.git/
 .idea/
 *.iml
+docs/
+README.md
