@@ -32,10 +32,12 @@ public final class LogSetup {
 
         try {
             Files.createDirectories(Path.of("logs"));
-            FileHandler fileHandler = new FileHandler("logs/uno.log", false);
+            FileHandler fileHandler = new FileHandler("logs/uno.log", true);
             fileHandler.setFormatter(new SimpleFormatter());
             root.addHandler(fileHandler);
             root.setLevel(Level.INFO);
+            // keep Hibernate's own chatter out of the game log
+            Logger.getLogger("org.hibernate").setLevel(Level.SEVERE);
         } catch (IOException e) {
             // logging should never stop the game from running
             root.setLevel(Level.OFF);

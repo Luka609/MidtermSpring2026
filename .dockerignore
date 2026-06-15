@@ -1,6 +1,7 @@
 target/
 out/
 logs/
+data/
 .git/
 .idea/
 *.iml

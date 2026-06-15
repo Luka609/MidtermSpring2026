@@ -21,6 +21,7 @@ public class GameRunner {
     private final ConsoleView view;
     private final Random random;
     private final GameConfig config;
+    private RoundOutcome lastOutcome;
 
     public GameRunner(GameState state, ConsoleView view, Random random, GameConfig config) {
         this.state = state;
@@ -29,7 +30,8 @@ public class GameRunner {
         this.config = config;
     }
 
-    public void playGame() {
+    public RoundOutcome playGame() {
+        lastOutcome = null;
         setupPlayers(config.bots, config.human);
         state.deck.clear();
         state.deck.addAll(DeckBuilder.buildStandardDeck());
@@ -52,6 +54,7 @@ public class GameRunner {
                 + ", " + state.playerNames.get(state.currentPlayer) + " to start");
 
         runTurnLoop();
+        return lastOutcome;
     }
 
     private void dealCards() {
@@ -173,6 +176,7 @@ public class GameRunner {
         state.scores[state.currentPlayer] += points;
         view.showWin(name, points);
         LOG.info("Round over: " + name + " won and scored " + points + " points");
+        lastOutcome = new RoundOutcome(name, points);
     }
 
     private void applyCardEffect(Card card) {
