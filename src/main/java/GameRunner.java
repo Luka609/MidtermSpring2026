@@ -154,7 +154,7 @@ public class GameRunner {
         }
 
         if (hand.size() == 1) {
-            view.showUno(name);
+            handleUnoCall(name, hand);
         }
 
         if (hand.isEmpty()) {
@@ -164,6 +164,19 @@ public class GameRunner {
 
         applyCardEffect(card);
         return false;
+    }
+
+    private void handleUnoCall(String name, ArrayList<String> hand) {
+        boolean called = !state.humanPlayers.get(state.currentPlayer) || view.askCallUno();
+        if (Rules.missedUno(hand.size(), called)) {
+            hand.add(state.draw(random));
+            hand.add(state.draw(random));
+            view.showMissedUno(name);
+            LOG.warning(name + " missed the UNO call and draws 2");
+            return;
+        }
+        view.showUno(name);
+        LOG.info(name + " called UNO");
     }
 
     private void handleWin(String name) {

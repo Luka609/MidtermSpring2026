@@ -89,7 +89,11 @@ public class ConsoleView {
     public int askHuman(ArrayList<String> hand, String upCard, String calledColor) {
         while (true) {
             System.out.print("Choose card index/code or draw: ");
-            String input = scanner.nextLine().trim().toUpperCase();
+            String raw = readLine();
+            if (raw == null) {
+                return -1;
+            }
+            String input = raw.trim().toUpperCase();
             if (input.equals("DRAW")) {
                 return -1;
             }
@@ -117,20 +121,58 @@ public class ConsoleView {
 
     public boolean askPlayDrawn(String card) {
         System.out.print("Play drawn card " + card + "? y/n: ");
-        String answer = scanner.nextLine();
-        return answer.equalsIgnoreCase("y") || answer.equalsIgnoreCase("yes");
+        String answer = readLine();
+        return answer != null
+                && (answer.equalsIgnoreCase("y") || answer.equalsIgnoreCase("yes"));
     }
 
     public String askColor() {
         while (true) {
             System.out.print("Call color R/Y/G/B: ");
-            String input = scanner.nextLine().trim().toUpperCase();
+            String raw = readLine();
+            if (raw == null) {
+                return "R";
+            }
+            String input = raw.trim().toUpperCase();
             if (input.equals("R") || input.equals("Y") ||
                     input.equals("G") || input.equals("B")) {
                 return input;
             }
             System.out.println("Bad color.");
         }
+    }
+
+    /**
+     * Asks a human holding their second-to-last card to call UNO.
+     * Returns true if they call it.
+     */
+    public boolean askCallUno() {
+        System.out.print("One card left! Type UNO to call it (anything else forgets): ");
+        String raw = readLine();
+        if (raw == null) {
+            return true;
+        }
+        String input = raw.trim().toUpperCase();
+        return input.equals("UNO") || input.equals("Y") || input.equals("YES");
+    }
+
+    public void showMissedUno(String playerName) {
+        if (!quiet) System.out.println(playerName + " forgot to call UNO and draws 2!");
+    }
+
+    public void showOverallWinner(String playerName) {
+        System.out.println("\n" + playerName + " reaches the target and wins the game!");
+    }
+
+    /**
+     * Reads one line, returning null at end of input so the game never
+     * crashes when input is exhausted (piped input or a closed stdin).
+     */
+    private String readLine() {
+        if (!scanner.hasNextLine()) {
+            return null;
+        }
+        return scanner.nextLine();
     }
 
     private String join(ArrayList<String> cards) {

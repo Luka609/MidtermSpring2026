@@ -23,8 +23,8 @@ public class Main {
         GameConfig config = GameConfig.parse(args);
 
         if (config.help) {
-            System.out.println("Usage: java -jar uno-cli.jar [--bots N] [--games N] [--human] "
-                    + "[--quiet] [--seed N] [--report recent|wins|scores|all]");
+            System.out.println("Usage: java -jar uno-cli.jar [--bots N] [--games N] [--target N] "
+                    + "[--human] [--quiet] [--seed N] [--report recent|wins|scores|all]");
             return;
         }
 
@@ -43,29 +43,51 @@ public class Main {
             return;
         }
 
-        LOG.info("UNO session starting: games=" + config.games
+        LOG.info("UNO session starting: games=" + config.games + ", target=" + config.target
                 + ", bots=" + config.bots + ", human=" + config.human
                 + ", seed=" + config.seed);
 
-        List<RoundResult> rounds = new ArrayList<>();
-        for (int g = 1; g <= config.games; g++) {
-            view.showGameHeader(g);
-            RoundOutcome outcome = runner.playGame();
-            if (outcome != null) {
-                rounds.add(new RoundResult(g, outcome.winnerName(), outcome.points()));
-            }
-        }
+        List<RoundResult> rounds = playSession(config, state, view, runner);
 
         view.showFinalScores(state.playerNames, state.scores);
+        if (config.target > 0) {
+            view.showOverallWinner(state.playerNames.get(
+                    Rules.leader(state.scores, state.playerNames.size())));
+        }
         LOG.info("UNO session finished");
 
-        persistSession(config, state, rounds);
+        persistSession(state, rounds);
     }
 
-    private static void persistSession(GameConfig config, GameState state, List<RoundResult> rounds) {
+    private static List<RoundResult> playSession(GameConfig config, GameState state,
+                                                 ConsoleView view, GameRunner runner) {
+        List<RoundResult> rounds = new ArrayList<>();
+        int round = 0;
+        while (true) {
+            round++;
+            view.showGameHeader(round);
+            RoundOutcome outcome = runner.playGame();
+            if (outcome != null) {
+                rounds.add(new RoundResult(round, outcome.winnerName(), outcome.points()));
+            }
+            if (sessionOver(config, state, round)) {
+                return rounds;
+            }
+        }
+    }
+
+    private static boolean sessionOver(GameConfig config, GameState state, int round) {
+        if (config.target > 0) {
+            return Rules.reachedTarget(state.scores, state.playerNames.size(), config.target)
+                    || round >= 1000;
+        }
+        return round >= config.games;
+    }
+
+    private static void persistSession(GameState state, List<RoundResult> rounds) {
         try {
             GameRepository repo = new GameRepository();
-            Long id = repo.recordGame(LocalDateTime.now(), config.games,
+            Long id = repo.recordGame(LocalDateTime.now(), rounds.size(),
                     state.playerNames, state.scores, rounds, winnerName(state));
             LOG.info("Persisted game session id=" + id);
         } catch (RuntimeException e) {
@@ -79,13 +101,7 @@ public class Main {
         if (state.playerNames.isEmpty()) {
             return null;
         }
-        int best = 0;
-        for (int i = 1; i < state.playerNames.size(); i++) {
-            if (state.scores[i] > state.scores[best]) {
-                best = i;
-            }
-        }
-        return state.playerNames.get(best);
+        return state.playerNames.get(Rules.leader(state.scores, state.playerNames.size()));
     }
 
     private static void runReport(String type) {

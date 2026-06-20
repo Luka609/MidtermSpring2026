@@ -108,7 +108,8 @@ docker run --rm -it uno-cli --human --bots 2 --games 1
 | Option      | Description                          | Default |
 |-------------|--------------------------------------|---------|
 | `--bots N`  | number of bot players                | `3`     |
-| `--games N` | number of games to play             | `1`     |
+| `--games N` | number of rounds to play            | `1`     |
+| `--target N`| play rounds until a player reaches N points (e.g. 500) | off |
 | `--human`   | add a human player (you)            | off     |
 | `--quiet`   | suppress per-turn output            | off     |
 | `--seed N`  | random seed for reproducible games  | `10`    |
@@ -129,6 +130,15 @@ G+2   green draw two
 W     wild
 W4    wild draw four
 draw  draw a card
+```
+
+When you play down to one card, type `UNO` at the prompt — forgetting draws a
+two-card penalty. After playing a wild, choose a color (`R/Y/G/B`).
+
+Play a full multi-round game to 500 points:
+
+```bash
+java -jar target/uno-cli.jar --human --bots 3 --target 500
 ```
 
 ## Logging
@@ -163,3 +173,11 @@ docker run --rm -v uno-data:/app/data uno-cli --report all
 
 See [docs/database.md](docs/database.md) for the schema, ORM configuration, and
 test details.
+
+## Documentation
+
+- [docs/rules-supported.md](docs/rules-supported.md) — which UNO rules are
+  implemented and the variants/simplifications used
+- [docs/final-report.md](docs/final-report.md) — rules, CLI usage, architecture,
+  tests, and limitations
+- [docs/database.md](docs/database.md) — database and persistence guide

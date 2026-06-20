@@ -44,4 +44,40 @@ public class Rules {
     }
     return total;
   }
+
+  /**
+   * Returns true if a player should be penalized for not calling UNO.
+   * Timing rule: this is checked the moment a player is reduced to a single
+   * card by playing; if UNO was not called at that point, the penalty applies.
+   */
+  public static boolean missedUno(int handSize, boolean calledUno) {
+    return handSize == 1 && !calledUno;
+  }
+
+  /**
+   * Index of the highest-scoring player among the first {@code playerCount}
+   * entries. Ties resolve to the lowest index.
+   */
+  public static int leader(int[] scores, int playerCount) {
+    int best = 0;
+    for (int i = 1; i < playerCount; i++) {
+      if (scores[i] > scores[best]) {
+        best = i;
+      }
+    }
+    return best;
+  }
+
+  /**
+   * True once any of the first {@code playerCount} players has reached or
+   * exceeded the target score, ending a multi-round game.
+   */
+  public static boolean reachedTarget(int[] scores, int playerCount, int target) {
+    for (int i = 0; i < playerCount; i++) {
+      if (scores[i] >= target) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
